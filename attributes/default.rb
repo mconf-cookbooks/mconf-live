@@ -6,14 +6,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-default[:mconf][:user] = "mconf"
-default[:mconf][:dir] = "/var/mconf"
-default[:mconf][:tools][:dir] = "/var/mconf/tools"
-default[:mconf][:log][:dir] = "/var/mconf/log"
 default[:mconf][:live][:repo] = "http://mconf.org/chef/mconf-live/deploy"
 default[:mconf][:live][:deploy_dir] = "#{node[:mconf][:dir]}/deploy/mconf-live"
 default[:mconf][:live][:force_deploy] = false
-default[:mconf][:live][:default_playback] = [ "presentation" ]
 
 # set true if you want your Mconf-Live server to act as a standalone server or 
 # if you want a recording server that will query for encrypted recordings
@@ -33,3 +28,7 @@ default[:mconf][:streaming][:record] = ""
 default[:mconf][:streaming][:logoutURL] = ""
 default[:mconf][:streaming][:welcomeMsg] = ""
 default[:mconf][:streaming][:metadata] = {}
+
+default[:mconf][:branding][:logo] = ""
+default[:mconf][:branding][:copyright_message] = ""
+default[:mconf][:branding][:background] = ""
