@@ -19,167 +19,83 @@ if node[:mconf][:recording_server][:enabled]
     ignore_failure true
     action :upgrade
   end
+  package "mconf-presentation-export" do
+    action :upgrade
+    only_if do node[:bbb][:recording][:playback_formats].split(",").include? "presentation_export" end
+  end
 else
   package "mconf-recording-encrypted" do
     action :upgrade
   end
 end
 
-=begin
-template "/var/www/bigbluebutton/client/conf/config.xml" do
+package("zlib1g-dev").run_action(:install)
+[ "nokogiri", "htmlentities" ].each do |g|
+  chef_gem g do
+    action :install
+  end
+  
+  require g
+end
+
+config_xml = "/var/www/bigbluebutton/client/conf/config.xml"
+module_version = ""
+chrome_version = ""
+firefox_version = ""
+flash_version = ""
+default_layout = ""
+
+# the information here will always contain the original repository values
+ruby_block "parse config.xml information" do
+  block do
+    doc = Nokogiri::XML(open(config_xml).read)
+    module_version = doc.xpath("/config/version").first.content
+    chrome_version = doc.xpath("/config/browserVersions/@chrome").first.value
+    firefox_version = doc.xpath("/config/browserVersions/@firefox").first.value
+    flash_version = doc.xpath("/config/browserVersions/@flash").first.value
+    default_layout = doc.xpath("/config/layout/@defaultLayout").first.value
+    Chef::Log.info "module_version: #{module_version}"
+    Chef::Log.info "chrome_version: #{chrome_version}"
+    Chef::Log.info "firefox_version: #{firefox_version}"
+    Chef::Log.info "flash_version: #{flash_version}"
+    Chef::Log.info "default_layout: #{default_layout}"
+  end
+end
+
+template config_xml do
+  def as_html(s)
+    return HTMLEntities.new.encode(s, :basic, :decimal)
+  end
+  
   source "config.xml.erb"
   mode "0644"
   variables(
-    :module_version => node[:mconf][:live][:version_int],
-    :streaming => node[:mconf][:streaming][:enabled],
-    :logo => node[:mconf][:branding][:logo],
-    :copyright_message => node[:mconf][:branding][:copyright_message],
-    :background => node[:mconf][:branding][:background]
+    lazy {{
+      :module_version => module_version,
+      :chrome_version => chrome_version,
+      :firefox_version => firefox_version,
+      :flash_version => flash_version,
+      :default_layout => default_layout,
+      :logo => as_html(node[:mconf][:branding][:logo]),
+      :copyright_message => as_html(node[:mconf][:branding][:copyright_message]),
+      :background => as_html(node[:mconf][:branding][:background]),
+      :server_domain => node[:bbb][:server_domain],
+      :server_url => node[:bbb][:server_url]
+    }}
   )
 end
 
-{ "bbb_api_conf.jsp.erb" => "/var/lib/tomcat6/webapps/demo/bbb_api_conf.jsp",
-  "bigbluebutton.properties.erb" => "/var/lib/tomcat6/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties" }.each do |k,v|
-  template v do
-    source k
-    group "tomcat6"
-    owner "tomcat6"
-    mode "0644"
-    variables(
-      :server_url => node[:bbb][:server_url],
-      :salt => node[:bbb][:salt]
-    )
-    notifies :run, "execute[restart bigbluebutton]", :delayed
-    only_if do File.exists?(File.dirname(v)) end
-  end
-end
-
-{ "bigbluebutton.yml.erb" => "/usr/local/bigbluebutton/core/scripts/bigbluebutton.yml" }.each do |k,v|
-  template v do
-    source k
-    group "tomcat6"
-    owner "tomcat6"
-    mode "0644"
-    variables(
-      :server_url => node[:bbb][:server_url],
-      :salt => node[:bbb][:salt]
-    )
-    only_if do File.exists?(File.dirname(v)) end
-  end
-end
-
-{ "mconf-default.pdf" => "/var/www/bigbluebutton-default/mconf-default.pdf",
-  "layout.xml" => "/var/www/bigbluebutton/client/conf/layout.xml",
-  "layout-streaming.xml" => "/var/www/bigbluebutton/client/conf/layout-streaming.xml",
-  "help.html" => "/var/www/bigbluebutton-default/help.html" }.each do |k,v|
-    cookbook_file v do
-      source k
-      mode "0644"
-    end
-end
-
-service "nginx"
-
-cookbook_file "/etc/bigbluebutton/nginx/client.nginx" do
-  source "client.nginx"
-  mode "0644"
-  notifies :restart, "service[nginx]", :immediately
-end
-
-{ "bigbluebutton-sip.properties.erb" => "/usr/share/red5/webapps/sip/WEB-INF/bigbluebutton-sip.properties" }.each do |k,v|
-  template v do
-    source k
-    mode "0644"
-    notifies :run, "execute[restart bigbluebutton]", :delayed
-  end
-end
-
-template "/var/www/bigbluebutton-default/index.html" do
-  source "index.html.erb"
-  mode "0644"
-  variables(
-    :redirect_url => node[:bbb][:demo][:enabled]? "/demo/demo_mconf.jsp": "http://mconf.org"
-  )
-end
-
-decrypt_god = "/etc/bigbluebutton/god/conf/mconf-god-conf.rb"
-decrypt_god_disabled = "#{decrypt_god}.disabled"
-ruby_block "configure decrypt" do
-  block do
-    if node[:mconf][:recording_server][:enabled]
-      FileUtils.move decrypt_god_disabled, decrypt_god if File.exists?(decrypt_god_disabled)
-    else
-      FileUtils.move decrypt_god, decrypt_god_disabled if File.exists?(decrypt_god)
-    end
-  end
-  only_if do File.exists?(decrypt_god) != node[:mconf][:recording_server][:enabled] end
-  notifies :restart, "service[bbb-record-core]", :immediately
-end
-
-directory "/var/log/bigbluebutton/mconf" do
-  action :create
-  owner "tomcat6"
-  group "tomcat6"
-  mode 00755
-  only_if do not node[:mconf][:recording_server][:enabled] end
-end
-
-include_recipe "bigbluebutton::open4"
-
-ruby_block "generate recording server keys" do
-    block do
-        command_execute("openssl genrsa -out #{node[:mconf][:recording_server][:private_key_path]} 2048", true)
-        command_execute("openssl rsa -in #{node[:mconf][:recording_server][:private_key_path]} -out #{node[:mconf][:dir]}/public_key.pem -outform PEM -pubout", true)
-
-        # The following code doesn't work because the RSA key generated by Ruby 
-        # OpenSSL is formatted in a way that the openssl application doesn't
-        # understand
-        # http://stackoverflow.com/questions/4635837/invalid-public-keys-when-using-the-ruby-openssl-library
-        #rsa_key = OpenSSL::PKey::RSA.new(2048)
-        #private_key = rsa_key.to_pem
-        #File.open("#{node[:mconf][:recording_server][:private_key_path]}", 'w') {|f| f.write(private_key) }
-        #public_key = rsa_key.public_key.to_pem
-        #node.set[:keys][:recording_server_public] = "#{public_key}"
-    end
-    only_if do node[:mconf][:recording_server][:enabled] and not File.exists?(node[:mconf][:recording_server][:private_key_path]) end
-end
+public_key_path = node[:mconf][:recording_server][:public_key_path]
 
 ruby_block "save public key" do
   block do
-    node.set[:keys][:recording_server_public] = File.read("#{node[:mconf][:dir]}/public_key.pem")
+    node.set[:keys][:recording_server_public] = File.read(public_key_path)
   end
-  only_if do node[:mconf][:recording_server][:enabled] and File.exists?("#{node[:mconf][:dir]}/public_key.pem") end
+  only_if do node[:mconf][:recording_server][:enabled] and File.exists?(public_key_path) end
 end
 
-Dir["/var/bigbluebutton/published/**/metadata.xml"].each do |filename|
-    execute "update server url metadata" do
-        # extra escape needed
-        command "sed -i 's \\(https\\?://[^/]*\\)/\\(mconf\\|presentation\\|presentation_export\\)/ #{node[:bbb][:server_url]}/\\2/ g' #{filename}"
-        user "root"
-        action :run
-        only_if do File.exists?(filename) end
-    end
-end
-
-# \TODO remove files from non recorded sessions
-# \TODO create cron jobs to handle such files
-ruby_block "remove raw data of encrypted recordings" do
-    block do
-        Dir["/var/bigbluebutton/published/mconf/*"].each do |dir|
-            meeting_id = File.basename(dir)
-            if not File.exists?("/var/bigbluebutton/recordings/raw/#{meeting_id}")
-                Chef::Log.info "The recording #{meeting_id} is published so the video, audio and deskshare files aren't needed anymore"
-                FileUtils.rm_r [ "/usr/share/red5/webapps/video/streams/#{meeting_id}",
-                                 "/usr/share/red5/webapps/deskshare/streams/#{meeting_id}",
-                                 Dir.glob("/var/freeswitch/meetings/#{meeting_id}*.wav") ], :force => true
-            end
-        end
-    end
-    only_if do not node[:mconf][:recording_server][:enabled] end
-end
-
-template "/usr/local/bigbluebutton/core/scripts/mconf.yml" do
-  source "mconf.yml.erb"
+template "/usr/local/bigbluebutton/core/scripts/mconf-decrypter.yml" do
+  source "mconf-decrypter.yml.erb"
   mode 00644
   variables(
     :get_recordings_url => node[:mconf][:recording_server][:get_recordings_url],
@@ -187,7 +103,6 @@ template "/usr/local/bigbluebutton/core/scripts/mconf.yml" do
   )
   only_if do node[:mconf][:recording_server][:enabled] end
 end
-=end
 
 ruby_block "early exit" do
   block do
