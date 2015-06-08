@@ -11,21 +11,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-if node[:mconf][:recording_server][:enabled]
-  package "mconf-recording-decrypter" do
-    action :upgrade
-  end
-  package "mconf-presentation-video" do
-    ignore_failure true
-    action :upgrade
-  end
-  package "mconf-presentation-export" do
-    action :upgrade
-    only_if do node[:bbb][:recording][:playback_formats].split(",").include? "presentation_export" end
-  end
-else
-  package "mconf-recording-encrypted" do
-    action :upgrade
+{ "mconf-recording-decrypter" => node[:mconf][:recording_server][:enabled],
+  "mconf-presentation-video" => node[:mconf][:recording_server][:enabled] && node[:bbb][:recording][:playback_formats].split(",").include?("presentation_video"),
+  "mconf-presentation-export" => node[:mconf][:recording_server][:enabled] && node[:bbb][:recording][:playback_formats].split(",").include?("presentation_export"),
+  "mconf-recording-encrypted" => !node[:mconf][:recording_server][:enabled] }.each do |pkg, enabled|
+  package pkg do
+    ignore_failure (pkg == "mconf-presentation-video")
+    if enabled
+      action :upgrade
+    else
+      action :purge
+    end
   end
 end
 
@@ -62,6 +58,8 @@ ruby_block "parse config.xml information" do
   end
 end
 
+service "tomcat7"
+
 template config_xml do
   def as_html(s)
     return HTMLEntities.new.encode(s, :basic, :decimal)
@@ -80,9 +78,12 @@ template config_xml do
       :copyright_message => as_html(node[:mconf][:branding][:copyright_message]),
       :background => as_html(node[:mconf][:branding][:background]),
       :server_domain => node[:bbb][:server_domain],
-      :server_url => node[:bbb][:server_url]
+      :server_url => node[:bbb][:server_url],
+      :show_recording_notification => node[:mconf][:config_xml][:show_recording_notification]
     }}
   )
+  subscribes :create, "execute[set bigbluebutton ip]", :immediately
+  notifies :restart, "service[tomcat7]", :immediately
 end
 
 public_key_path = node[:mconf][:recording_server][:public_key_path]

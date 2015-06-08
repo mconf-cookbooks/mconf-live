@@ -23,3 +23,23 @@ default[:mconf][:recording_server][:get_recordings_url] = nil
 default[:mconf][:branding][:logo] = "logo.png"
 default[:mconf][:branding][:copyright_message] = "© 2015 <a href='http://www.mconf.org' target='_blank'>http://www.mconf.org</a>"
 default[:mconf][:branding][:background] = ""
+
+default[:mconf][:config_xml][:show_recording_notification] = true
+
+apt_repo = "http://mconf-live-ci.nuvem.ufrgs.br/apt/production"
+
+default[:bbb][:bigbluebutton][:repo_url] = apt_repo
+default[:bbb][:bigbluebutton][:key_url] = "http://mconf-live-ci.nuvem.ufrgs.br/apt/public.asc"
+default[:bbb][:bigbluebutton][:components] = ["mconf-trusty" , "main"]
+default[:bbb][:bigbluebutton][:package_name] = "mconf-live"
+
+default[:bbb][:ffmpeg][:install_method] = "package"
+default[:bbb][:ffmpeg][:version] = "2.4.2"
+default[:bbb][:ffmpeg][:filename] = "ffmpeg_2.4.2-1_amd64.deb"
+default[:bbb][:ffmpeg][:repo_url] = "#{apt_repo}/files"
+default[:bbb][:ffmpeg][:dependencies] = [ "libwebp-dev" ]
+
+default[:bbb][:libvpx][:install_method] = "package"
+default[:bbb][:libvpx][:version] = "1.3.0"
+default[:bbb][:libvpx][:filename] = "libvpx_1.3.0-1-trusty_amd64.deb"
+default[:bbb][:libvpx][:repo_url] = "#{apt_repo}/files"

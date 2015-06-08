@@ -6,18 +6,19 @@
     <javaTest url="<%= @server_url %>/testjava.html"/>
     <porttest host="<%= @server_domain %>" application="video/portTest" timeout="10000"/>    
     <bwMon server="<%= @server_domain %>" application="video/bwTest"/>
-    <application uri="rtmp://<%= @server_domain %>/bigbluebutton" host="<%= @server_url %>/bigbluebutton/api/enter" />
+    <application uri="rtmp://<%= @server_domain %>/bigbluebutton" host="<%= @server_url %>/bigbluebutton/api/enter"/>
     <language userSelectionEnabled="true" />
-    <skinning enabled="true" url="<%= @server_url %>/client/branding/css/BBBDefault.css.swf" />
+    <skinning enabled="true" url="<%= @server_url %>/client/branding/css/BBBDefault.css.swf?v=<%= @module_version %>" />
     <branding logo="<%= @logo %>" copyright="<%= @copyright_message %>" background="<%= @background %>" />
     <shortcutKeys showButton="true" />
     <browserVersions chrome="<%= @chrome_version %>" firefox="<%= @firefox_version %>" flash="<%= @flash_version %>" java="1.7.0_51" />
-    <layout showLogButton="false" showVideoLayout="false" showResetLayout="true" defaultLayout="<%= @default_layout %>"
+    <layout showLogButton="false" defaultLayout="<%= @default_layout %>"
             showToolbar="true" showFooter="true" showMeetingName="true" showHelpButton="true" 
-            showLogoutWindow="true" showLayoutTools="true" showNetworkMonitor="true" confirmLogout="true"
-            showRecordingNotification="true"/>
-    <lock allowModeratorLocking="false" disableCamForLockedUsers="false" disableMicForLockedUsers="false" disablePrivateChatForLockedUsers="false" 
-          disablePublicChatForLockedUsers="false" lockLayoutForLockedUsers="false"/>
+            showLogoutWindow="true" showLayoutTools="true" confirmLogout="true" showNetworkMonitor="true" 
+            showRecordingNotification="<%= @show_recording_notification %>"/>
+    <meeting muteOnStart="false" />
+    <lock disableCamForLockedUsers="false" disableMicForLockedUsers="false" disablePrivateChatForLockedUsers="false" 
+          disablePublicChatForLockedUsers="false" lockLayoutForLockedUsers="false" lockOnJoin="true" lockOnJoinConfigurable="false"/>
             
 		<modules>
 		 
@@ -89,21 +90,14 @@
 			priorityRatio = "0.67"
 		/>
 		
-		<module name="WhiteboardModule" url="<%= @server_url %>/client/WhiteboardModule.swf?v=4105" 
+		<module name="WhiteboardModule" url="<%= @server_url %>/client/WhiteboardModule.swf?v=<%= @module_version %>" 
 			uri="rtmp://<%= @server_domain %>/bigbluebutton" 
 			dependsOn="PresentModule"
 			baseTabIndex="601"
 			whiteboardAccess="presenter"
 			keepToolbarVisible="false"
 		/>
-<!--
 
-    <module name="PollingModule" url="<%= @server_url %>/client/PollingModule.swf?v=<%= @module_version %>" 
-      uri="rtmp://<%= @server_domain %>/bigbluebutton" 
-      dependsOn="PresentModule"
-    />
-    		
--->
 		<module name="PresentModule" url="<%= @server_url %>/client/PresentModule.swf?v=<%= @module_version %>" 
 			uri="rtmp://<%= @server_domain %>/bigbluebutton" 
 			host="<%= @server_url %>" 
@@ -115,22 +109,6 @@
 			maxFileSize="30"
 		/>
 
-<!--
-		<module name="VideodockModule" url="<%= @server_url %>/client/VideodockModule.swf?v=<%= @module_version %>"
-			uri="rtmp://<%= @server_domain %>/bigbluebutton" 
-			dependsOn="VideoconfModule, UsersModule"
-			autoDock="true"
-			showControls="true"
-			maximizeWindow="false"
-			position="bottom-right"
-			width="172"
-			height="179"
-			layout="smart"
-			oneAlwaysBigger="false"
-			baseTabIndex="401"
-		/>
--->
-		
 		<module name="LayoutModule" url="<%= @server_url %>/client/LayoutModule.swf?v=<%= @module_version %>"
 			uri="rtmp://<%= @server_domain %>/bigbluebutton"
 			layoutConfig="<%= @server_url %>/client/conf/layout.xml"
@@ -144,22 +122,5 @@
 			dependsOn="UsersModule"
 			position="bottom-left"
 		/>
-
-<!--
-    <module name="NotesModule" url="<%= @server_url %>/client/NotesModule.swf?v=<%= @module_version %>"
-      saveURL="<%= @server_url %>"
-      position="top-left"
-    />
-    
-    <module name="BroadcastModule" url="<%= @server_url %>/client/BroadcastModule.swf?v=<%= @module_version %>"
-      uri="rtmp://<%= @server_domain %>/bigbluebutton"
-      streamsUri="<%= @server_url %>/streams.xml"
-      position="top-left"
-      showStreams="true"
-      autoPlay="false"
-      dependsOn="UsersModule"
-    />
--->
-    		
 	</modules>
 </config>
