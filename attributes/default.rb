@@ -37,4 +37,5 @@ default['ffmpeg']['compile_flags'] = [ "--enable-x11grab",
                                        "--enable-version3",
                                        "--enable-postproc",
                                        "--enable-libvorbis",
-                                       "--enable-libvpx" ]
+                                       "--enable-libvpx",
+                                       "--enable-librtmp" ]
