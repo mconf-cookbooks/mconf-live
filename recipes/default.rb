@@ -16,6 +16,7 @@
   "mconf-presentation-export" => node[:mconf][:recording_server][:enabled] && node[:bbb][:recording][:playback_formats].split(",").include?("presentation_export"),
   "mconf-recording-encrypted" => !node[:mconf][:recording_server][:enabled] }.each do |pkg, enabled|
   package pkg do
+    options "-o Dpkg::Options::='--force-confnew'"
     ignore_failure (pkg == "mconf-presentation-video")
     if enabled
       action :upgrade
