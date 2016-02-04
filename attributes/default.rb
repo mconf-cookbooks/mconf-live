@@ -21,7 +21,7 @@ default['mconf']['recording_server']['public_key_path'] = "/usr/local/bigbluebut
 default['mconf']['recording_server']['get_recordings_url'] = nil
 
 default['mconf']['branding']['logo'] = "logo.png"
-default['mconf']['branding']['copyright_message'] = "© 2015 <a href='http://www.mconf.org' target='_blank'>http://www.mconf.org</a>"
+default['mconf']['branding']['copyright_message'] = "© 2016 <a href='http://www.mconf.org' target='_blank'><u>http://www.mconf.org</u></a>"
 default['mconf']['branding']['background'] = ""
 
 default['mconf']['config_xml']['show_recording_notification'] = true
