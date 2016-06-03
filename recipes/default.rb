@@ -78,6 +78,8 @@ template config_xml do
       :logo => as_html(node[:mconf][:branding][:logo]),
       :copyright_message => as_html(node[:mconf][:branding][:copyright_message]),
       :background => as_html(node[:mconf][:branding][:background]),
+      :toolbarColor => as_html(node[:mconf][:branding][:toolbarColor]),
+      :toolbarColorAlphas => as_html(node[:mconf][:branding][:toolbarColorAlphas]),
       :server_domain => node[:bbb][:server_domain],
       :server_url => node[:bbb][:server_url],
       :show_recording_notification => node[:mconf][:config_xml][:show_recording_notification]
