@@ -11,10 +11,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-{ "mconf-recording-decrypter" => node[:mconf][:recording_server][:enabled],
-  "mconf-presentation-video" => node[:mconf][:recording_server][:enabled] && node[:bbb][:recording][:playback_formats].split(",").include?("presentation_video"),
-  "mconf-presentation-export" => node[:mconf][:recording_server][:enabled] && node[:bbb][:recording][:playback_formats].split(",").include?("presentation_export"),
-  "mconf-recording-encrypted" => !node[:mconf][:recording_server][:enabled] }.each do |pkg, enabled|
+{ "mconf-recording-decrypter" => node['mconf']['recording_server']['enabled'],
+  "mconf-presentation-video" => node['mconf']['recording_server']['enabled'] && node['bbb']['recording']['playback_formats'].split(",").include?("presentation_video"),
+  "mconf-presentation-export" => node['mconf']['recording_server']['enabled'] && node['bbb']['recording']['playback_formats'].split(",").include?("presentation_export"),
+  "mconf-recording-encrypted" => !node['mconf']['recording_server']['enabled'] }.each do |pkg, enabled|
   package pkg do
     options "-o Dpkg::Options::='--force-confnew'"
     ignore_failure (pkg == "mconf-presentation-video")
@@ -75,38 +75,38 @@ template config_xml do
       :firefox_version => firefox_version,
       :flash_version => flash_version,
       :default_layout => default_layout,
-      :logo => as_html(node[:mconf][:branding][:logo]),
-      :copyright_message => as_html(node[:mconf][:branding][:copyright_message]),
-      :background => as_html(node[:mconf][:branding][:background]),
-      :toolbarColor => as_html(node[:mconf][:branding][:toolbarColor]),
-      :toolbarColorAlphas => as_html(node[:mconf][:branding][:toolbarColorAlphas]),
-      :server_domain => node[:bbb][:server_domain],
-      :server_url => node[:bbb][:server_url],
-      :show_recording_notification => node[:mconf][:config_xml][:show_recording_notification],
-      :help_url => (node[:mconf][:config_xml][:help_url].nil? ? "#{node[:bbb][:server_url]}/help.html" : node[:mconf][:config_xml][:help_url])
+      :logo => as_html(node['mconf']['branding']['logo']),
+      :copyright_message => as_html(node['mconf']['branding']['copyright_message']),
+      :background => as_html(node['mconf']['branding']['background']),
+      :toolbarColor => as_html(node['mconf']['branding']['toolbarColor']),
+      :toolbarColorAlphas => as_html(node['mconf']['branding']['toolbarColorAlphas']),
+      :server_domain => node['bbb']['server_domain'],
+      :server_url => node['bbb']['server_url'],
+      :show_recording_notification => node['mconf']['config_xml']['show_recording_notification'],
+      :help_url => (node['mconf']['config_xml']['help_url'].nil? ? "#{node['bbb']['server_url']}/help.html" : node['mconf']['config_xml']['help_url'])
     }}
   )
   subscribes :create, "execute[set bigbluebutton ip]", :immediately
   notifies :restart, "service[tomcat7]", :immediately
 end
 
-public_key_path = node[:mconf][:recording_server][:public_key_path]
+public_key_path = node['mconf']['recording_server']['public_key_path']
 
 ruby_block "save public key" do
   block do
-    node.set[:keys][:recording_server_public] = File.read(public_key_path)
+    node.set['keys']['recording_server_public'] = File.read(public_key_path)
   end
-  only_if do node[:mconf][:recording_server][:enabled] and File.exists?(public_key_path) end
+  only_if do node['mconf']['recording_server']['enabled'] and File.exists?(public_key_path) end
 end
 
 template "/usr/local/bigbluebutton/core/scripts/mconf-decrypter.yml" do
   source "mconf-decrypter.yml.erb"
   mode 00644
   variables(
-    :get_recordings_url => node[:mconf][:recording_server][:get_recordings_url],
-    :private_key => node[:mconf][:recording_server][:private_key_path]
+    :get_recordings_url => node['mconf']['recording_server']['get_recordings_url'],
+    :private_key => node['mconf']['recording_server']['private_key_path']
   )
-  only_if do node[:mconf][:recording_server][:enabled] end
+  only_if do node['mconf']['recording_server']['enabled'] end
 end
 
 ruby_block "early exit" do
