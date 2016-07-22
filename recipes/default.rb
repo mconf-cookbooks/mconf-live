@@ -82,7 +82,8 @@ template config_xml do
       :toolbarColorAlphas => as_html(node[:mconf][:branding][:toolbarColorAlphas]),
       :server_domain => node[:bbb][:server_domain],
       :server_url => node[:bbb][:server_url],
-      :show_recording_notification => node[:mconf][:config_xml][:show_recording_notification]
+      :show_recording_notification => node[:mconf][:config_xml][:show_recording_notification],
+      :help_url => (node[:mconf][:config_xml][:help_url].nil? ? "#{node[:bbb][:server_url]}/help.html" : node[:mconf][:config_xml][:help_url])
     }}
   )
   subscribes :create, "execute[set bigbluebutton ip]", :immediately

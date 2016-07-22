@@ -27,6 +27,7 @@ default['mconf']['branding']['toolbarColor'] = ""
 default['mconf']['branding']['toolbarColorAlphas'] = ""
 
 default['mconf']['config_xml']['show_recording_notification'] = true
+default['mconf']['config_xml']['help_url'] = nil
 
 default['bbb']['bigbluebutton']['repo_url'] = "http://mconf-live-ci.nuvem.ufrgs.br/apt/production"
 default['bbb']['bigbluebutton']['key_url'] = "http://mconf-live-ci.nuvem.ufrgs.br/apt/public.asc"
