@@ -31,7 +31,8 @@ default['mconf']['config_xml']['help_url'] = nil
 
 default['bbb']['bigbluebutton']['repo_url'] = "http://mconf-live-ci.nuvem.ufrgs.br/apt/production"
 default['bbb']['bigbluebutton']['key_url'] = "http://mconf-live-ci.nuvem.ufrgs.br/apt/public.asc"
-default['bbb']['bigbluebutton']['components'] = ["mconf-trusty" , "main"]
+default['bbb']['bigbluebutton']['dist'] = "mconf-trusty"
+default['bbb']['bigbluebutton']['components'] = ["main"]
 default['bbb']['bigbluebutton']['package_name'] = "mconf-live"
 
 default['ffmpeg']['git_revision'] = "n2.4.2"
