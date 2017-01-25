@@ -74,7 +74,7 @@ template config_xml do
       :chrome_version => chrome_version,
       :firefox_version => firefox_version,
       :flash_version => flash_version,
-      :default_layout => default_layout,
+      :default_layout => (node['mconf']['config_xml']['default_layout'].nil? ? default_layout : node['mconf']['config_xml']['default_layout']),
       :logo => as_html(node['mconf']['branding']['logo']),
       :copyright_message => as_html(node['mconf']['branding']['copyright_message']),
       :background => as_html(node['mconf']['branding']['background']),
