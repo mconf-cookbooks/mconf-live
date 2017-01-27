@@ -27,12 +27,15 @@
 end
 
 package("zlib1g-dev").run_action(:install)
-[ "nokogiri", "htmlentities" ].each do |g|
-  chef_gem g do
+[ [ "nokogiri" , "~> 1.6.0"],
+  [ "htmlentities" , "~> 4.3.0"]
+].each do |g|
+  chef_gem g[0] do
     action :install
+    version g[1]
   end
-  
-  require g
+
+  require g[0]
 end
 
 config_xml = "/var/www/bigbluebutton/client/conf/config.xml"
@@ -65,7 +68,7 @@ template config_xml do
   def as_html(s)
     return HTMLEntities.new.encode(s, :basic, :decimal)
   end
-  
+
   source "config.xml.erb"
   mode "0644"
   variables(
