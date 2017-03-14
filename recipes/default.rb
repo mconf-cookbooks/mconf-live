@@ -27,12 +27,14 @@
 end
 
 package("zlib1g-dev").run_action(:install)
-[ "nokogiri", "htmlentities" ].each do |g|
-  chef_gem g do
-    action :install
-  end
-  
-  require g
+{ "nokogiri" => "1.6.4.1",
+  "htmlentities" => "4.3.3" }.each do |gem_name, gem_version|
+    chef_gem gem_name do
+      version gem_version
+      action :install
+    end
+
+    require gem_name
 end
 
 config_xml = "/var/www/bigbluebutton/client/conf/config.xml"
