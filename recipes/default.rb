@@ -26,7 +26,11 @@
   end
 end
 
-package("zlib1g-dev").run_action(:install)
+# nokogiri dependencies
+[ "build-essential", "patch", "ruby-dev", "zlib1g-dev", "liblzma-dev" ].each do |pkg|
+  package(pkg).run_action(:install)
+end
+
 { "nokogiri" => "1.6.4.1",
   "htmlentities" => "4.3.3" }.each do |gem_name, gem_version|
     chef_gem gem_name do
