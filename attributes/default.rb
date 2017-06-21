@@ -19,6 +19,7 @@ default['mconf']['recording_server']['enabled'] = true
 default['mconf']['recording_server']['private_key_path'] = "/usr/local/bigbluebutton/core/scripts/private.pem"
 default['mconf']['recording_server']['public_key_path'] = "/usr/local/bigbluebutton/core/scripts/public.pem"
 default['mconf']['recording_server']['get_recordings_url'] = nil
+default['mconf']['recording_server']['apt_packages'] = [ "bbb-playback-presentation" ]
 
 default['mconf']['branding']['logo'] = "logo.png"
 default['mconf']['branding']['copyright_message'] = "© 2016 <a href='http://www.mconf.org' target='_blank'><u>http://www.mconf.org</u></a>"
