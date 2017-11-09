@@ -20,8 +20,10 @@
     ignore_failure (pkg == "mconf-presentation-video")
     if enabled
       action :upgrade
-    else
-      action :purge
+    # Do not purge any installed format
+    # TODO better describe which are the packages installed and which are the formats enabled
+    # else
+    #   action :purge
     end
   end
 end
