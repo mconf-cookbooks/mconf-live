@@ -10,6 +10,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
+execute "pre update command" do
+  user "root"
+  command node['mconf']['recw']['pre_update_command']
+  action :run
+  not_if { node['mconf']['recw']['pre_update_command'].nil? }
+end
+
 include_recipe "bigbluebutton::pre-install"
 
 node['mconf']['recording_server']['apt_packages'].each do |pkg|
@@ -110,4 +117,11 @@ ruby_block "update recordings definition" do
        h.write config.to_yaml
     end
   end
+end
+
+execute "post update command" do
+  user "root"
+  command node['mconf']['recw']['post_update_command']
+  action :run
+  not_if { node['mconf']['recw']['post_update_command'].nil? }
 end
