@@ -22,8 +22,8 @@
       action :upgrade
     # Do not purge any installed format
     # TODO better describe which are the packages installed and which are the formats enabled
-    # else
-    #   action :purge
+    else
+      action :nothing
     end
   end
 end
